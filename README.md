@@ -1,9 +1,9 @@
 # CRIB
 This is the PyTorch implementation of our paper "Beyond the Latest: Correcting Release Interval Bias in Short-video Recommendation". This repository contains the code and instructions to reproduce the experiments described in the paper.
 
-
-
 ## Repository Structure
+
+==TODO==
 
 ```
 .
@@ -29,6 +29,8 @@ conda env create -f ./environment.yaml -n new_env_name
 
 ## Datasets
 
+==TODO==
+
 The datasets used in the experiments (e.g., KuaiRand-Pure) are not included in this repository. Please download the datasets from their respective official websites and place them in the `data/` directory. For example:
 
 ```
@@ -37,7 +39,17 @@ data/
     └── ml-100k/
 ```
 
+### Data preprocessing
+
+Run the following command to process the `KuaiRand-Pure` dataset:
+
+```bash
+python src/data_processing.py --dataset_name kuairand_pure
+```
+
 ## Parameters
+
+==TODO==
 
 Key parameters for training and evaluation:
 
@@ -58,43 +70,43 @@ Key parameters for training and evaluation:
 
 #### Matrix Factorization (MF)
 
-Run the following command to reproduce the MF experiments:
+Run the following command to reproduce the MF results:
 
 ```bash
-python src/mf/train.py --config configs/mf_config.yaml
+python main.py --dataset_name kuairand_pure --model_name MF --epochs 20 --lamb 0.1 --test_only True
 ```
 
 #### LightGCN
 
-Run the following command to reproduce the LightGCN experiments:
+Run the following command to reproduce the LightGCN results:
 
 ```bash
-python src/lightgcn/train.py --config configs/lightgcn_config.yaml
+python main.py --dataset_name kuairand_pure --model_name LightGCN --num_layers 2 --epochs 20 --lamb 0.1 --test_only True
 ```
 
 #### MF-CRIB
 
-Run the following command to reproduce the MF-CRIB experiments:
+Run the following command to reproduce the MF-CRIB results:
 
 ```bash
-python src/mf_crib/train.py --config configs/mf_crib_config.yaml
+python main.py --dataset_name kuairand_pure --model_name MF_CRIB --epochs 20 --lamb 0.1 --alpha 0.5 --test_only True
 ```
 
 #### LightGCN-CRIB
 
-Run the following command to reproduce the LightGCN-CRIB experiments:
+Run the following command to reproduce the LightGCN-CRIB results:
 
 ```bash
-python src/lightgcn_crib/train.py --config configs/lightgcn_crib_config.yaml
+python main.py --dataset_name kuairand_pure --model_name LightGCN_CRIB --num_layers 2 --epochs 20 --lamb 0.05 --alpha 0.5 --test_only True
 ```
-
-
 
 ## Results
 
-The results of all experiments will be saved in the `results/` directory. Each experiment will generate logs, performance metrics, and model checkpoints.
+The results of all experiments will be saved in the `log/Top-K.log`. 
 
 ## Acknowledgments
+
+==TODO==
 
 ### NFM, TaFR, LDRI, and LDRI-iter Experiments
 
@@ -102,13 +114,4 @@ These experiments are reproduced using the code provided by the authors of the [
 
 ## Citation
 
-If you find this repository helpful, please cite our paper:
-
-```
-@inproceedings{anonymous2025sigir,
-  title     = {Title of Your SIGIR 2025 Paper},
-  author    = {Anonymous},
-  booktitle = {Proceedings of the 48th International ACM SIGIR Conference on Research and Development in Information Retrieval},
-  year      = {2025}
-}
-```
+If you find this repository helpful, please cite our paper.
