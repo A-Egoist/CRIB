@@ -141,14 +141,14 @@ Follow these steps to train an MF-CRIB model from scratch:
 
 3.  For other datasets and models, adjust the dataset name, model name, and parameters according to the provided hyperparameter table:
 
-    |               | MF        | MF-CRIB               | LightGCN   | LightGCN-CRIB         |
-    | ------------- | --------- | --------------------- | ---------- | --------------------- |
-    | KuaiRand-Pure | lamb=0.1  | lamb=0.1, alpha=0.5   | lamb=0.1   | lamb=0.05, alpha=0.5  |
-    | KuaiRand-1K   | lamb=0.01 | lamb=0.1, alpha=0.85  | lamb=0.1   | lamb=0.05, alpha=0.15 |
-    | KuaiRec-small | lamb=0.3  | lamb=0.1, alpha=0.95  | lamb=0.015 | lamb=0.01, alpha=0.85 |
-    | KuaiRec-big   | lamb=0.26 | lamb=0.01, alpha=0.85 | lamb=0.1   | lamb=0.01, alpha=0.95 |
-    | KuaiSAR-small | lamb=0.1  | lamb=0.1, alpha=0.8   | lamb=0.1   | lamb=0.01, alpha=0.8  |
-    | KuaiSAR       | lamb=0.1  | lamb=0.01, alpha=0.7  | lamb=0.5   | lamb=0.01, alpha=0.75 |
+    |               | MF                   | MF-CRIB                          | LightGCN              | LightGCN-CRIB                    |
+    | ------------- | -------------------- | -------------------------------- | --------------------- | -------------------------------- |
+    | KuaiRand-Pure | lr=0.0001, lamb=0.1  | lr=0.0001, lamb=0.1, alpha=0.5   | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.05, alpha=0.5  |
+    | KuaiRand-1K   | lr=0.0001, lamb=0.01 | lr=0.0001, lamb=0.1, alpha=0.85  | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.05, alpha=0.15 |
+    | KuaiRec-small | lr=0.0001, lamb=0.3  | lr=0.0001, lamb=0.1, alpha=0.95  | lr=0.0001, lamb=0.015 | lr=0.0001, lamb=0.01, alpha=0.85 |
+    | KuaiRec-big   | lr=0.0001, lamb=0.26 | lr=0.0001, lamb=0.01, alpha=0.85 | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.01, alpha=0.95 |
+    | KuaiSAR-small | lr=0.0001, lamb=0.1  | lr=0.0001, lamb=0.1, alpha=0.8   | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.01, alpha=0.8  |
+    | KuaiSAR       | lr=0.0001, lamb=0.1  | lr=0.0001, lamb=0.01, alpha=0.7  | lr=0.0001, lamb=0.5   | lr=0.0001, lamb=0.01, alpha=0.75 |
 
 ## Acknowledgments
 
