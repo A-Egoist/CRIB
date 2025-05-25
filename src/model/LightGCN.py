@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*- 
-# @File : LightGCN.py
-# @Time : 2024/10/14 10:31:58
-# @Author :  
-# @Software : Visual Studio Code
 import torch
 import torch.nn as nn
 import dgl
@@ -53,7 +48,8 @@ class LightGCN(nn.Module):
 
         pred = torch.sum(user_emb * item_emb, dim=-1)
         reg_loss = self._reg_loss(user_indices, item_indices)
-        return torch.sigmoid(pred), reg_loss
+        # return torch.sigmoid(pred), reg_loss
+        return pred, reg_loss
     
     def predict(self, user_indices, item_indices):
         user_embeddings, item_embeddings = self._graph_forward()

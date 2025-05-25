@@ -1,18 +1,13 @@
-# -*- coding: utf-8 -*- 
-# @File : data_processing.py
-# @Time : 2024/10/13 22:07:43
-# @Author :  
-# @Software : Visual Studio Code
 import os
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, TensorDataset, DataLoader
+from sklearn.model_selection import train_test_split
 from datetime import date
-import argparse
 
 
-def load_data(dataset_name, loss_name):
+def load_data(dataset_name):
     train_df = pd.read_csv(os.path.join(os.getcwd(), 'data', dataset_name + '-train.csv'))
     train_df = train_df.drop_duplicates()
     valid_df = pd.read_csv(os.path.join(os.getcwd(), 'data', dataset_name + '-valid.csv'))
@@ -31,7 +26,7 @@ class BCEDataset(Dataset):
         super().__init__()
         self.user_id = torch.tensor(np.array(df.iloc[:, 0].tolist()), dtype=torch.long)  # user id
         self.item_id = torch.tensor(np.array(df.iloc[:, 1].tolist()), dtype=torch.long)  # item id
-        self.time_diff = torch.tensor(np.array(df.iloc[:, 2].tolist()), dtype=torch.long)  # time diff
+        self.time_diff = torch.tensor(np.array(df.iloc[:, 2].tolist()), dtype=torch.long)  # time_diff
         self.user_trend = torch.tensor(np.array(df.iloc[:, 4].tolist()), dtype=torch.float32)  # user intercation trend
         self.item_trend = torch.tensor(np.array(df.iloc[:, 5].tolist()), dtype=torch.float32)  # item interaction trend
         self.label = torch.tensor(np.array(df.iloc[:, 3].tolist()), dtype=torch.float32)  # interaction label
@@ -49,7 +44,7 @@ class TestDataset(Dataset):
         super().__init__()
         self.user_id = torch.tensor(np.array(df.iloc[:, 0].tolist()), dtype=torch.long)  # user id
         self.item_id = torch.tensor(np.array(df.iloc[:, 1].tolist()), dtype=torch.long)  # item id
-        self.time_diff = torch.tensor(np.array(df.iloc[:, 2].tolist()), dtype=torch.long)  # time diff
+        self.time_diff = torch.tensor(np.array(df.iloc[:, 2].tolist()), dtype=torch.long)  # time_diff
         self.user_trend = torch.tensor(np.array(df.iloc[:, 4].tolist()), dtype=torch.float32)  # user intercation trend
         self.item_trend = torch.tensor(np.array(df.iloc[:, 5].tolist()), dtype=torch.float32)  # item interaction trend
         self.label = torch.tensor(np.array(df.iloc[:, 3].tolist()), dtype=torch.float32)  # interaction label
@@ -114,10 +109,7 @@ def KuaiRand_preprocess(dataset):
 
 
 def KuaiRec_preprocess(dataset):
-    if dataset == "kuairec_small":
-        log_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiRec', 'data', 'small_matrix.csv'))
-    elif dataset == "kuairec_big":
-        log_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiRec', 'data', 'big_matrix.csv'))
+    log_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiRec', 'data', 'big_matrix.csv'))
     video_feat = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiRec', 'data', 'item_daily_features.csv'))
     video_feat = video_feat[['video_id', 'upload_dt']].drop_duplicates()
     df = pd.merge(left=log_df, right=video_feat, how='left', on=['video_id']).dropna(how='any')
@@ -127,7 +119,6 @@ def KuaiRec_preprocess(dataset):
     df['date'] = pd.to_datetime(df['time']).dt.date
     df['upload_dt'] = pd.to_datetime(df['upload_dt'], format='%Y-%m-%d').dt.date
     df = df[['user_id', 'video_id', 'date', 'upload_dt', 'label']]
-    # rename columns
     df.columns = ['user_id', 'item_id', 'date', 'upload_dt', 'label']
     print(df.head(10))
     df.to_csv(os.path.join(os.path.join(os.getcwd(), 'data', dataset + '.csv')), index=False)
@@ -140,6 +131,8 @@ def KuaiRec_preprocess(dataset):
     valid_df['time_diff'] = (valid_df['date'] - valid_df['upload_dt']).dt.days
     test_df['time_diff'] = test_df['upload_dt'].apply(lambda x: (date(2020, 8, 21) - x).days if x <= date(2020, 8, 21) else 0)
 
+    # TODO
+    # limit the scope of time diff
     train_df['time_diff'] = train_df['time_diff'].clip(0, (date(2020, 8, 14) - date(2020, 7, 7)).days)
     valid_df['time_diff'] = valid_df['time_diff'].clip(0, (date(2020, 8, 21) - date(2020, 7, 7)).days)
     test_df['time_diff'] = test_df['time_diff'].clip(0, (date(2020, 9, 5) - date(2020, 7, 7)).days)
@@ -153,12 +146,15 @@ def KuaiRec_preprocess(dataset):
 
 
 def KuaiSAR_preprocess(dataset):
+    # TODO
     if dataset == "kuaisar_small":
         log_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiSAR-small', 'rec_inter.csv'))
         item_feat = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiSAR-small', 'item_features.csv'))
     elif dataset == "kuaisar":
         log_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiSAR', 'rec_inter.csv'))
         item_feat = pd.read_csv(os.path.join(os.getcwd(), 'data', 'KuaiSAR', 'item_features.csv'))
+    # print(log_df.columns)
+    # print(item_feat.columns)
     item_feat['upload_dt'] = pd.to_datetime(item_feat['upload_time'], format='%Y-%m-%d', errors='coerce').dt.date
     item_feat.dropna(how='any')
     item_feat = item_feat[['item_id', 'upload_dt']].drop_duplicates()
@@ -215,7 +211,7 @@ def build_interaction_trend(dataset):
     if dataset == 'kuairand_pure' or dataset == 'kuairand_1k':
         train_time_diff = (date(2022, 4, 28) - date(2022, 4, 8)).days
         max_time_diff = (date(2022, 5, 8) - date(2022, 4, 8)).days
-    elif dataset == 'kuairec_small' or dataset == 'kuairec_big':
+    elif dataset == 'kuairec_big':
         train_time_diff = (date(2020, 8, 14) - date(2020, 7, 7)).days
         max_time_diff = (date(2020, 9, 5) - date(2020, 7, 7)).days
     elif dataset == 'kuaisar_small':
@@ -227,12 +223,10 @@ def build_interaction_trend(dataset):
 
     # user trend
     user_count = train_df.groupby(['user_id', 'time_diff']).size().unstack(fill_value=0)
-    # user_count = user_count.reindex(columns=range(max_time_diff), fill_value=0)  # extend
     user_count = user_count.reindex(columns=range(train_time_diff), fill_value=0)  # extend
     user_sum = user_count.sum(axis=1)
     user_sum[user_sum < 1e-6] = 1e-6
     user_trend = user_count.values / user_sum.values[:, None]
-    # user_trend = user_count.values / user_sum.max()
     user_trend[np.isnan(user_trend)] = 0  # replace NaN to 0
     user_trend = np.round(user_trend, 4)
     global_user_trend = user_trend.mean(axis=0)
@@ -243,12 +237,10 @@ def build_interaction_trend(dataset):
 
     # item trend
     item_count = train_df.groupby(['item_id', 'time_diff']).size().unstack(fill_value=0)
-    # item_count = item_count.reindex(columns=range(max_time_diff), fill_value=0)  # extend
     item_count = item_count.reindex(columns=range(train_time_diff), fill_value=0)  # extend
     item_sum = item_count.sum(axis=1)
     item_sum[item_sum < 1e-6] = 1e-6
     item_trend = item_count.values / item_sum.values[:, None]
-    # item_trend = item_count.values / item_sum.max()
     item_trend[np.isnan(item_trend)] = 0  # replace NaN to 0
     item_trend = np.round(item_trend, 4)
     global_item_trend = item_trend.mean(axis=0)
@@ -257,7 +249,6 @@ def build_interaction_trend(dataset):
     item_trend_df['item_trend'] = item_trend_df[[f'time_diff_{i}' for i in range(train_time_diff)]].values.tolist()
     item_trend_df = item_trend_df[['item_id', 'item_trend']]
 
-    # user_trend_df.drop(user_trend_df.index[0], inplace=True)
     # cold start user
     noise_level = 0.01
     all_user_ids = pd.DataFrame({'user_id': list(range(num_users))})
@@ -283,19 +274,111 @@ def build_interaction_trend(dataset):
     return user_trend_df, item_trend_df, train_time_diff, max_time_diff, global_trend
 
 
-def parser():
-    parser = argparse.ArgumentParser(description="argument parser")
-    parser.add_argument('--dataset_name', type=str, default='kuairand_pure', choices=['kuairand_pure', 'kuairand_1k', 'kuairec_small', 'kuairec_big', 'kuaisar_small', 'kuaisar'])
-    args = parser.parse_args()
-    return args
+def build_interaction_trend_pos(dataset):
+    train_df = pd.read_csv(os.path.join(os.getcwd(), 'data', dataset + '-train.csv'))
+    valid_df = pd.read_csv(os.path.join(os.getcwd(), 'data', dataset + '-valid.csv'))
+    test_df = pd.read_csv(os.path.join(os.getcwd(), 'data', dataset + '-test.csv'))
+    num_users = max(train_df['user_id'].max(), valid_df['user_id'].max(), test_df['user_id'].max()) + 1  # user id from 0 to max
+    num_items = max(train_df['item_id'].max(), valid_df['item_id'].max(), test_df['item_id'].max()) + 1  # item id from 0 to max
+
+    if dataset == 'kuairand_pure' or dataset == 'kuairand_1k':
+        train_time_diff = (date(2022, 4, 28) - date(2022, 4, 8)).days
+        max_time_diff = (date(2022, 5, 8) - date(2022, 4, 8)).days
+    elif dataset == 'kuairec_big':
+        train_time_diff = (date(2020, 8, 14) - date(2020, 7, 7)).days
+        max_time_diff = (date(2020, 9, 5) - date(2020, 7, 7)).days
+    elif dataset == 'kuaisar_small':
+        train_time_diff = (date(2023, 5, 27) - date(2023, 5, 22)).days
+        max_time_diff = (date(2023, 5, 31) - date(2023, 5, 22)).days
+    elif dataset == 'kuaisar':
+        train_time_diff = (date(2023, 6, 2) - date(2023, 5, 22)).days
+        max_time_diff = (date(2023, 6, 10) - date(2023, 5, 22)).days
+
+    # user trend
+    user_count = train_df.groupby(['user_id', 'time_diff']).size().unstack(fill_value=0)
+    # user_count = user_count.reindex(columns=range(max_time_diff), fill_value=0)  # extend
+    user_count = user_count.reindex(columns=range(train_time_diff), fill_value=0)  # extend
+    user_sum = user_count.sum(axis=1)
+    user_sum[user_sum < 1e-6] = 1e-6
+    user_trend = user_count.values / user_sum.values[:, None]
+    # user_trend = user_count.values / user_sum.max()
+    user_trend[np.isnan(user_trend)] = 0  # replace NaN to 0
+    user_trend = np.round(user_trend, 4)
+    global_user_trend = user_trend.mean(axis=0)
+    user_trend_df = pd.DataFrame(user_trend, index=user_count.index, columns=range(train_time_diff)).reset_index()
+    user_trend_df.columns = ['user_id'] + [f'time_diff_{i}' for i in range(train_time_diff)]
+    user_trend_df['user_trend'] = user_trend_df[[f'time_diff_{i}' for i in range(train_time_diff)]].values.tolist()
+    user_trend_df = user_trend_df[['user_id', 'user_trend']]
+
+    # user positive trend
+    train_pos_df = train_df[train_df['label'] == 1].copy()
+    user_pos_count = train_pos_df.groupby(['user_id', 'time_diff']).size().unstack(fill_value=0)
+    user_pos_count = user_pos_count.reindex(columns=range(train_time_diff), fill_value=0)  # extend
+    # TODO
+    user_pos_trend = user_pos_count.values / user_count.values
+    user_pos_trend[np.isnan(user_pos_trend)] = 0  # replace NaN to 0
+    user_pos_trend = np.round(user_pos_trend, 4)
+    user_pos_trend_df = pd.DataFrame(user_pos_trend, index=user_pos_count.index, columns=range(train_time_diff)).reset_index()
+    user_pos_trend_df.columns = ['user_id'] + [f'time_diff_{i}' for i in range(train_time_diff)]
+    user_pos_trend_df['user_trend'] = user_pos_trend_df[[f'time_diff_{i}' for i in range(train_time_diff)]].values.tolist()
+    user_pos_trend_df = user_pos_trend_df[['user_id', 'user_pos_trend']]
+
+    # item trend
+    item_count = train_df.groupby(['item_id', 'time_diff']).size().unstack(fill_value=0)
+    item_count = item_count.reindex(columns=range(train_time_diff), fill_value=0)  # extend
+    item_sum = item_count.sum(axis=1)
+    item_sum[item_sum < 1e-6] = 1e-6
+    item_trend = item_count.values / item_sum.values[:, None]
+    item_trend[np.isnan(item_trend)] = 0  # replace NaN to 0
+    item_trend = np.round(item_trend, 4)
+    global_item_trend = item_trend.mean(axis=0)
+    item_trend_df = pd.DataFrame(item_trend, index=item_count.index, columns=range(train_time_diff)).reset_index()
+    item_trend_df.columns = ['item_id'] + [f'time_diff_{i}' for i in range(train_time_diff)]
+    item_trend_df['item_trend'] = item_trend_df[[f'time_diff_{i}' for i in range(train_time_diff)]].values.tolist()
+    item_trend_df = item_trend_df[['item_id', 'item_trend']]
+
+    # item positive trend
+    train_pos_df = train_df[train_df['label'] == 1].copy()
+    item_pos_count = train_pos_df.groupby(['user_id', 'time_diff']).size().unstack(fill_value=0)
+    item_pos_count = item_pos_count.reindex(columns=range(train_time_diff), fill_value=0)  # extend
+    item_pos_trend = item_pos_count.values / item_count.values
+    item_pos_trend[np.isnan(item_pos_trend)] = 0  # replace NaN to 0
+    item_pos_trend = np.round(item_pos_trend, 4)
+    item_pos_trend_df = pd.DataFrame(item_pos_trend, index=item_pos_count.index, columns=range(train_time_diff)).reset_index()
+    item_pos_trend_df.columns = ['user_id'] + [f'time_diff_{i}' for i in range(train_time_diff)]
+    item_pos_trend_df['user_trend'] = item_pos_trend_df[[f'time_diff_{i}' for i in range(train_time_diff)]].values.tolist()
+    item_pos_trend_df = item_pos_trend_df[['user_id', 'user_pos_trend']]
+
+    # cold start user
+    noise_level = 0.01
+    all_user_ids = pd.DataFrame({'user_id': list(range(num_users))})
+    user_trend_df = pd.merge(all_user_ids, user_trend_df, on='user_id', how='left')
+    user_trend_df['user_trend'] = user_trend_df['user_trend'].apply(
+        lambda x: x if isinstance(x, list) else np.round((global_user_trend + np.random.normal(0, noise_level, train_time_diff)).tolist(), 4)
+    )
+
+    # cold start item
+    all_item_ids = pd.DataFrame({'item_id': list(range(num_items))})
+    item_trend_df = pd.merge(all_item_ids, item_trend_df, on='item_id', how='left')
+    item_trend_df['item_trend'] = item_trend_df['item_trend'].apply(
+        lambda x: x if isinstance(x, list) else np.round((global_item_trend + np.random.normal(0, noise_level, train_time_diff)).tolist(), 4)
+    )
+
+    # global trend
+    global_count = train_df.groupby('time_diff').size()
+    num_interactions = global_count.sum()
+    global_trend = global_count.values / num_interactions
+    global_trend[np.isnan(global_trend)] = 0  # replace NaN to 0
+    global_trend = np.round(global_trend, 4)
+
+    return user_trend_df, item_trend_df, train_time_diff, max_time_diff, global_trend, user_pos_trend_df, item_pos_trend_df
 
 
 if __name__ == "__main__":
-    args = parser()
-    dataset = args.dataset_name
+    dataset = "kuairand_pure"  # ['kuairand_pure', 'kuairand_1k', 'kuairec_big', 'kuaisar_small', 'kuaisar']
     if dataset == "kuairand_pure" or dataset == "kuairand_1k":
         KuaiRand_preprocess(dataset)
-    elif dataset == "kuairec_small" or dataset == "kuairec_big":
+    elif dataset == "kuairec_big":
         KuaiRec_preprocess(dataset)
     elif dataset == "kuaisar_small" or dataset == "kuaisar":
         KuaiSAR_preprocess(dataset)

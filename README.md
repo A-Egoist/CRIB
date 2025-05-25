@@ -1,46 +1,6 @@
 # CRIB
 This is the PyTorch implementation of our paper "Beyond the Latest: Correcting Release Interval Bias in Short-video Recommendation". This repository contains the code and instructions to reproduce the experiments described in the paper.
 
-## Repository Structure
-
-```
-.
-│  .gitignore
-│  environment.yaml      # Environment file
-│  main.py               # Main script to run experiments
-│  README.md
-│
-├─data                   # Directory for datasets
-│      kuairand_pure-test.csv   # Test dataset
-│      kuairand_pure-train.csv  # Training dataset
-│      kuairand_pure-valid.csv  # Validation dataset
-│      README.md                # Dataset description
-│
-├─log                    # Directory for logs
-│      Top-K.log         # Log file for Top-K results
-│
-├─save_model             # Directory for saved models
-│      kuairand_pure-LightGCN-BCE-0.1.pt        # LightGCN model checkpoint
-│      kuairand_pure-LightGCN_CRIB-BCE-0.05.pt  # LightGCN-CRIB model checkpoint
-│      kuairand_pure-MF-BCE-0.1.pt              # MF model checkpoint
-│      kuairand_pure-MF_CRIB-BCE-0.1.pt         # MF-CRIB model checkpoint
-│
-└─src                    # Source code for the project
-    │  data_processing.py  # Preprocessing and data loading
-    │  metrics.py          # Evaluation metrics implementation
-    │  test.py             # Testing script
-    │  train.py            # Training script
-    │  utils.py            # Utility functions
-    │  __init__.py
-    │
-    └─model              # Model implementations
-            LightGCN.py      # LightGCN model
-            LightGCN_CRIB.py # LightGCN-CRIB model
-            MF.py            # Matrix Factorization model
-            MF_CRIB.py       # MF-CRIB model
-            __init__.py
-```
-
 ## Requirements
 
 Install the required packages using the following command:

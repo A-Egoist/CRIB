@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*- 
-# @File : evaluate.py
-# @Time : 2024/10/14 15:45:18
-# @Author :  
-# @Software : Visual Studio Code
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -24,7 +19,7 @@ class TopK:
         res[f"NDCG@{self.topk}"] = np.round(self.get_NDCG(R, T), decimals)
         return res
 
-    def run(self):
+    def run(self, output=True):
         df = self.df[['user_id', 'item_id', 'label', 'pred']]
         
         # get ground truth
@@ -44,14 +39,16 @@ class TopK:
         R = df['pred_list'].tolist()  # 2d, [[2, 3, 4], [1, 2, 5], ..., [4, 1, 6]]
 
         res = self.get_result(R, T)
-        logger.info('Precision@{:d} {:.4f} | Recall@{:d} {:.4f} | HR@{:d} {:.4f} | MRR@{:d} {:.4f} | MAP@{:d} {:.4f} | NDCG@{:d} {:.4f}'
-                    .format(self.topk, res['Precision@' + str(self.topk)],
-                            self.topk, res['Recall@' + str(self.topk)],
-                            self.topk, res['HR@' + str(self.topk)],
-                            self.topk, res['MRR@' + str(self.topk)],
-                            self.topk, res['MAP@' + str(self.topk)],
-                            self.topk, res['NDCG@' + str(self.topk)]))
-        
+        if output:
+            logger.info('Precision@{:d} {:.4f} | Recall@{:d} {:.4f} | HR@{:d} {:.4f} | MRR@{:d} {:.4f} | MAP@{:d} {:.4f} | NDCG@{:d} {:.4f}'
+                        .format(self.topk, res['Precision@' + str(self.topk)],
+                                self.topk, res['Recall@' + str(self.topk)],
+                                self.topk, res['HR@' + str(self.topk)],
+                                self.topk, res['MRR@' + str(self.topk)],
+                                self.topk, res['MAP@' + str(self.topk)],
+                                self.topk, res['NDCG@' + str(self.topk)]))
+        return res
+
     def get_Precision(self, R, T):
         assert len(R) == len(T)
         res = 0

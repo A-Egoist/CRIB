@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*- 
-# @File : MF.py
-# @Time : 2024/10/17 16:17:57
-# @Author :  
-# @Software : Visual Studio Code
 import torch
 from torch import nn
 
@@ -32,7 +27,8 @@ class MF(nn.Module):
         
         pred = torch.sum(user_emb * item_emb, dim=-1)
         reg_loss = self._reg_loss(user_indices, item_indices)
-        return torch.sigmoid(pred), reg_loss
+        # return torch.sigmoid(pred), reg_loss
+        return pred, reg_loss
     
     def predict(self, user_indices, item_indices):
         user_embeddings, item_embeddings = self.user_embedding.weight, self.item_embedding.weight
