@@ -18,20 +18,17 @@ from src.data_processing import load_data, build_interaction_trend, BCEDataset, 
 
 def main(args):
     # ------------ Config and hyper-parameters ------------ #
-    dataset_name = args.dataset_name  # ["kuairand_pure", "kuairand_1k", "kuairec_small", "kuairec_big", "kuaisar_small", "kuaisar"]
-    model_name = args.model_name  # ["MF", "LightGCN", "DRIMF", "DRIGNN"]
-    # loss_name = args.loss_name  # ["BPR", "BCE"]
-    pre_trained = args.pre_trained  # [False, True]
-    embedding_dim = args.embedding_dim  # [16, 32, 64, 128], 128 for MF-based model, 32 for LightGCN-based model
+    dataset_name = args.dataset_name  # ["kuairand_pure", "kuairand_1k", "kuairec_big", "kuaisar_small", "kuaisar"]
+    model_name = args.model_name  # ["DRIMF", "DRIGNN"]
+    pre_trained = args.pre_trained
+    embedding_dim = args.embedding_dim
     num_layers = args.num_layers  # [2, 3]
-    lr = args.lr  # [0.0001, 0.001]
-    epochs =args.epochs  # [20, 40, 60]
-    batch_size = args.batch_size  # [1024, 2048, 4096, 8192]
-    lamb = args.lamb  # 0.01
-    test_only = args.test_only  # [False, False]
+    lr = args.lr
+    epochs =args.epochs
+    batch_size = args.batch_size
+    lamb = args.lamb
+    test_only = args.test_only
     CRIB_alpha = args.CRIB_alpha
-    LDRI_alpha = args.LDRI_alpha
-    LDRI_beta = args.LDRI_beta
     # ------------ Config and hyper-parameters ------------ #
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -68,11 +65,7 @@ def main(args):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     # model
-    if model_name == "MF-Base":
-        model = MF(num_users, num_items, embedding_dim)
-    elif model_name == "LightGCN-Base":
-        model = LightGCN(num_users, num_items, embedding_dim, train_graph, num_layers)
-    elif model_name == "MF-CRIB":
+    if model_name == "MF-CRIB":
         model = DRIMFBCE(num_users, num_items, embedding_dim, user_trends, item_trends, train_time_diff, max_time_diff, global_trend, CRIB_alpha)
     elif model_name == "LightGCN-CRIB":
         model = DRIGNNBCE(num_users, num_items, embedding_dim, user_trends, item_trends, train_time_diff, max_time_diff, global_trend, train_graph, num_layers, CRIB_alpha)
@@ -82,31 +75,27 @@ def main(args):
 
     if not test_only:
         optimizer = optim.Adam(model.parameters(), lr=lr)
-        model = train_and_valid(args, device, dataset_name, train_loader, valid_loader, valid_df, model_name, model, optimizer, epochs, lamb, LDRI_alpha=LDRI_alpha, LDRI_beta=LDRI_beta, CRIB_alpha=CRIB_alpha)
+        model = train_and_valid(args, device, dataset_name, train_loader, valid_loader, valid_df, model_name, model, optimizer, epochs, lamb, CRIB_alpha=CRIB_alpha)
 
-    if model_name == 'MF-LDRI' or model_name == 'LightGCN-LDRI':
-        test(device, dataset_name, test_loader, test_df, model_name, model, pred_mode='policy_1')
-    test(device, dataset_name, test_loader, test_df, model_name, model, pred_mode='policy_2')
+    test(device, dataset_name, test_loader, test_df, model_name, model)
     logger.remove(log_file)
 
 
 def parser():
     parser = argparse.ArgumentParser(description="argument parser")
     parser.add_argument('--dataset_name', type=str, default='kuairand_pure', choices=['kuairand_pure', 'kuairand_1k', 'kuairec_big', 'kuaisar_small', 'kuaisar'])
-    parser.add_argument('--model_name', type=str, default='DRIMF', choices=['MF-Base', 'LightGCN-Base', 'MF-CRIB', 'LightGCN-CRIB'])
+    parser.add_argument('--model_name', type=str, default='MF-CRIB', choices=['MF-CRIB', 'LightGCN-CRIB'])
     parser.add_argument('--pre_trained', type=bool, default=False, choices=[False, True])
-    parser.add_argument('--embedding_dim', type=int, default=16, choices=[16, 32, 64, 128], help='128 for MF-based model, 32 for LightGCN-based model')
+    parser.add_argument('--embedding_dim', type=int, default=16)
     parser.add_argument('--num_layers', type=int, default=2, choices=[2, 3])
-    parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--batch_size', type=int, default=2048, choices=[1024, 2048, 4096])
-    parser.add_argument('--lamb', type=float, default=0.01)
+    parser.add_argument('--lamb', type=float, default=0.1)
     parser.add_argument('--eval_interval', type=int, default=5)
     parser.add_argument('--patience', type=int, default=2)
     parser.add_argument('--test_only', type=bool, default=False, choices=[False, True])
-    parser.add_argument('--CRIB_alpha', type=float, default=0.5)
-    parser.add_argument('--LDRI_alpha', type=float, default=0.6)
-    parser.add_argument('--LDRI_beta', type=float, default=0.5)
+    parser.add_argument('--CRIB_alpha', type=float, default=0.4)
     args = parser.parse_args()
     return args
 

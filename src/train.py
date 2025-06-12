@@ -8,7 +8,7 @@ import os
 from .metrics import TopK
 
 
-def train_and_valid(args, device, dataset_name, train_loader, valid_loader, valid_df, model_name, model, optimizer, epochs, lamb, graph=None, num_layers=2, LDRI_alpha=0.6, LDRI_beta=0.5, CRIB_alpha=0.5):
+def train_and_valid(args, device, dataset_name, train_loader, valid_loader, valid_df, model_name, model, optimizer, epochs, lamb, graph=None, num_layers=2, CRIB_alpha=0.5):
     # train
     bce_loss = nn.BCELoss()
 
@@ -21,17 +21,10 @@ def train_and_valid(args, device, dataset_name, train_loader, valid_loader, vali
         flag_update_metric = 0  # used in valid
         loss_sum = torch.tensor([0], dtype=torch.float32).to(device)
         reg_loss_sum = torch.tensor([0], dtype=torch.float32).to(device)
-        # user_id, item_id, time_diff, user_trend, item_trend, label
         for user_ids, item_ids, time_diffs, user_trends, item_trends, labels in tqdm(train_loader):
             user_ids, item_ids, time_diffs, user_trends, item_trends, labels = user_ids.to(device), item_ids.to(device), time_diffs.to(device), user_trends.to(device), item_trends.to(device), labels.to(device)
             
-            if model_name == "MF-Base":
-                pred, reg_loss = model(user_ids, item_ids)
-                loss = bce_loss(torch.sigmoid(pred), labels.float()) + lamb * reg_loss
-            elif model_name == "LightGCN-Base":
-                pred, reg_loss = model(user_ids, item_ids)
-                loss = bce_loss(torch.sigmoid(pred), labels.float()) + lamb * reg_loss
-            elif model_name == "MF-CRIB":
+            if model_name == "MF-CRIB":
                 global_match, time_match, reg_loss = model(user_ids, item_ids, time_diffs, user_trends, item_trends)
                 loss = bce_loss(global_match, labels.float()) + bce_loss(time_match, labels.float()) + lamb * reg_loss
             elif model_name == "LightGCN-CRIB":
@@ -53,11 +46,7 @@ def train_and_valid(args, device, dataset_name, train_loader, valid_loader, vali
             valid_true = []
             for user_ids, item_ids, time_diffs, user_trends, item_trends, labels in tqdm(valid_loader):
                 user_ids, item_ids, time_diffs, user_trends, item_trends = user_ids.to(device), item_ids.to(device), time_diffs.to(device), user_trends.to(device), item_trends.to(device)
-                if model_name == "MF-Base":
-                    pred = model.predict(user_ids, item_ids)
-                elif model_name == "LightGCN-Base":
-                    pred = model.predict(user_ids, item_ids)
-                elif model_name == "MF-CRIB":
+                if model_name == "MF-CRIB":
                     pred = model.predict(user_ids, item_ids, time_diffs, user_trends, item_trends)
                 elif model_name == "LightGCN-CRIB":
                     pred = model.predict(user_ids, item_ids, time_diffs, user_trends, item_trends)

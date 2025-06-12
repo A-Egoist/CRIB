@@ -33,48 +33,31 @@ These files are used for training, validation, and testing the models.
 
 Key parameters for training and evaluation:
 
-*   `--dataset_name`: Name of the dataset (`kuairand_pure`, `kuairand_1k`, `kuairec_small`, `kuairec_big`, `kuaisar_small`, `kuaisar`).
-*   `--model_name`: Model to use (`MF`, `LightGCN`, `MF_CRIB`, or `LightGCN_CRIB`).
+*   `--dataset_name`: Name of the dataset (`kuairand_pure`, `kuairand_1k`, `kuairec_big`, `kuaisar_small`, `kuaisar`).
+*   `--model_name`: Model to use (`MF-CRIB`, or `LightGCN-CRIB`).
 *   `--num_layers`: Number of layers in the LightGCN model.
 *   `--lr`: Learning rate for the optimizer.
 *   `--epochs`: Number of training epochs.
-*   `--batch_size`: Batch size for training.
 *   `--lamb`: Regularization coefficient.
 *   `--test_only`: If `True`, runs only the testing phase.
-*   `--alpha`: Weight for combining long-term preference and short-term temporal preference.
+*   `--CRIB_alpha`: Weight for combining long-term preference and short-term temporal preference.
 
 ## Simply Reproduce the Results
 
-#### Matrix Factorization (MF)
-
-Run the following command to reproduce the MF results:
-
-```bash
-python main.py --dataset_name kuairand_pure --model_name MF --epochs 20 --lamb 0.1 --test_only True
-```
-
-#### LightGCN
-
-Run the following command to reproduce the LightGCN results:
-
-```bash
-python main.py --dataset_name kuairand_pure --model_name LightGCN --num_layers 2 --epochs 20 --lamb 0.1 --test_only True
-```
-
 #### MF-CRIB
 
-Run the following command to reproduce the MF-CRIB results:
+Run the following command to reproduce the CRIB with MF as the base model:
 
 ```bash
-python main.py --dataset_name kuairand_pure --model_name MF_CRIB --epochs 20 --lamb 0.1 --alpha 0.5 --test_only True
+python main.py --dataset_name kuairand_pure --model_name MF-CRIB --lamb 0.1 --CRIB_alpha 0.5 --test_only True
 ```
 
 #### LightGCN-CRIB
 
-Run the following command to reproduce the LightGCN-CRIB results:
+Run the following command to reproduce the CRIB with LightGCN as the base model:
 
 ```bash
-python main.py --dataset_name kuairand_pure --model_name LightGCN_CRIB --num_layers 2 --epochs 20 --lamb 0.05 --alpha 0.5 --test_only True
+python main.py --dataset_name kuairand_pure --model_name LightGCN-CRIB --lamb 0.05 --CRIB_alpha 0.5 --test_only True
 ```
 
 The results of all results will be saved in the `log/Top-K.log`.
@@ -94,21 +77,20 @@ Follow these steps to train an MF-CRIB model from scratch:
 2.  Train the MF-CRIB model with the following command:
 
     ```bash
-    python main.py --dataset_name kuairand_pure --model_name MF_CRIB --epochs 20 --lamb 0.1 --alpha 0.5
+    python main.py --dataset_name kuairand_pure --model_name MF-CRIB --epochs 20 --lamb 0.1 --CRIB_alpha 0.5
     ```
 
-    This will train the model for 20 epochs using the specified regularization coefficient (`lamb`) and weight for preference combination (`alpha`).
+    This will train the model for 20 epochs using the specified regularization coefficient (`lamb`) and weight for preference combination (`CRIB_alpha`).
 
 3.  For other datasets and models, adjust the dataset name, model name, and parameters according to the provided hyperparameter table:
 
-    |               | MF                   | MF-CRIB                          | LightGCN              | LightGCN-CRIB                    |
-    | ------------- | -------------------- | -------------------------------- | --------------------- | -------------------------------- |
-    | KuaiRand-Pure | lr=0.0001, lamb=0.1  | lr=0.0001, lamb=0.1, alpha=0.5   | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.05, alpha=0.5  |
-    | KuaiRand-1K   | lr=0.0001, lamb=0.01 | lr=0.0001, lamb=0.1, alpha=0.85  | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.05, alpha=0.15 |
-    | KuaiRec-small | lr=0.0001, lamb=0.3  | lr=0.0001, lamb=0.1, alpha=0.95  | lr=0.0001, lamb=0.015 | lr=0.0001, lamb=0.01, alpha=0.85 |
-    | KuaiRec-big   | lr=0.0001, lamb=0.26 | lr=0.0001, lamb=0.01, alpha=0.85 | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.01, alpha=0.95 |
-    | KuaiSAR-small | lr=0.0001, lamb=0.1  | lr=0.0001, lamb=0.1, alpha=0.8   | lr=0.0001, lamb=0.1   | lr=0.0001, lamb=0.01, alpha=0.8  |
-    | KuaiSAR       | lr=0.0001, lamb=0.1  | lr=0.0001, lamb=0.01, alpha=0.7  | lr=0.0001, lamb=0.5   | lr=0.0001, lamb=0.01, alpha=0.75 |
+    |               | MF-CRIB                         | LightGCN-CRIB                    |
+    | ------------- | ------------------------------- | -------------------------------- |
+    | KuaiRand-Pure | lr=0.0001, lamb=0.1, alpha=0.4  | lr=0.0001, lamb=0.05, alpha=0.5  |
+    | KuaiRand-1K   | lr=0.0001, lamb=0.05, alpha=0.6 | lr=0.0001, lamb=0.05, alpha=0.15 |
+    | KuaiRec-big   | lr=0.0001, lamb=0.01, alpha=0.9 | lr=0.0001, lamb=0.01, alpha=0.95 |
+    | KuaiSAR-small | lr=0.0001, lamb=0.1, alpha=0.9  | lr=0.0001, lamb=0.01, alpha=0.8  |
+    | KuaiSAR       | lr=0.0001, lamb=0.01, alpha=0.8 | lr=0.0001, lamb=0.01, alpha=0.75 |
 
 ## Acknowledgments
 
