@@ -92,10 +92,7 @@ Follow these steps to train an MF-CRIB model from scratch:
     | KuaiSAR-small | lr=0.0001, lamb=0.1, alpha=0.9  | lr=0.0001, lamb=0.01, alpha=0.8  |
     | KuaiSAR       | lr=0.0001, lamb=0.01, alpha=0.8 | lr=0.0001, lamb=0.01, alpha=0.75 |
 
-## Acknowledgments
-
-The implementations of NFM, TaFR, LDRI, and LDRI-iter from the [LDRI](https://github.com/ECNU-Text-Computing/LDRI) GitHub repository were used for performance comparison in this work. We acknowledge the authors of LDRI for making their code publicly available, which greatly facilitated our experimental benchmarks.
-
 ## Citation
 
 If you find this repository helpful, please cite our paper.
+
