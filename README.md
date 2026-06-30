@@ -96,3 +96,14 @@ Follow these steps to train an MF-CRIB model from scratch:
 
 If you find this repository helpful, please cite our paper.
 
+```bib
+@article{LONGZhang2026CRIB,
+  title = {Beyond the latest: Correcting Release Interval Bias in short-video recommendation},
+  author = {Xing Long and Heng-Ru Zhang and Yuan-Yuan Xu and Fan Min},
+  journal = {Knowledge-Based Systems},
+  year = {2026},
+  pages = {116486},
+  doi = {https://doi.org/10.1016/j.knosys.2026.116486},
+}
+```
+
